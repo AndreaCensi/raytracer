@@ -1,158 +1,59 @@
-#include <float.h>
-#include <cmath>
-#include "simplemap.h"
+#include "raytracer.h"
 
-namespace PPU {
+namespace RayTracer {
 	using namespace std;
-	
-	// Distance of q to the line containing this segment
-	double Segment::distToLine(const Point2d& q) const {
-		return fabs(   (q-p[0]) * normal()  );
-	}
-	
-	// A unitary vector perpendicular to this segment
-	Point2d Segment::normal() const {
-		return (p[1]-p[0]).perp().vers();
-	}
 
-	
-	bool Map::laserIncidence(
-		double& dist, double& alpha, 
-		const Point2od& eye, double maxRange) const  
-	{
-		// beam's directional vector
-		Point2d N(cos(eye.theta), sin(eye.theta));
-	
-		double mindist = 0;
-		Point2d Q; bool found = false;;
-		for(size_type i=0;i<size();i++) {
-			const Segment &s = (*this)[i];
-			
-//			if(ObstIgnore == s.obstType) continue;
-			if(s.laserType == LaserIgnore) continue;
-			
-			
-			// Normal to segment line
-			Point2d S = (s.p[1] - s.p[0]).perp();
-			// Check whether they can cross
-			if(S*N == 0) continue; // don't cross
-			// Black magic
-			double dist = (S*(s.p[0]-eye.point2())) / (S*N);
-			if(dist<=0) continue;
-			// don't cross
-			//cerr << "Segment: " << s << " Normal: "<< S << " Dist: " << dist << endl;
-			// Now we check whether the crossing point
-			// with the line lies within the segment
-			Point2d crossingPoint = eye.point2() + N * dist;
-			// distance from segment center to crossing point
-			double rad = crossingPoint.distTo( (s.p[0]+s.p[1])*0.5 );
-			if( rad > S.abs()/2 ) continue; // crossing point out of segment
-			if(mindist==0||dist<mindist) {
-				mindist = dist;
-				Q=s.p[1]-s.p[0];
-				found = true;
-			}
-		}
-		
-		if(!found) {
-			dist=NAN;
-			alpha=NAN;
+
+	bool Segment::ray_tracing(const double p[2], const double direction, 
+	 	double& range, double &alpha) const {
+
+		int found = segment_ray_tracing(this->p0, this->p1, p, direction, &range);
+
+		if(found) {
+			alpha = segment_alpha(this->p0, this->p1);
+
+			if( cos(alpha-direction) < 1 )
+				alpha = alpha + M_PI;
+
+			alpha = normalize_0_2PI(alpha);
+
+			return true;
+		} else {
+			alpha = NAN;
 			return false;
-		}
-		
-		if (maxRange>0 && mindist>maxRange){
-			dist=NAN;
-			alpha=NAN;
-			return false;
-		} 
-		
-		dist=mindist;
-		//incidence=(N*Q)/sqrt(Q*Q);
-		alpha = M_PI/2 + atan2(Q.y,Q.x);
-		
-		if( N * Point2d::vers(alpha) > 0 ) {
-			alpha = alpha + M_PI;
-		}
-		
-		return true;
-	
-	}
-	
-	//////////////// Cambi di coordinate
-	
-	double fig_scalex = DEFAULT_FIG_SCALEX;
-	double fig_scaley = DEFAULT_FIG_SCALEY;
-	
-	FIG::FIGPoint world2fig(const Point2d& w) {
-		return FIG::FIGPoint( (int)( w.x/fig_scalex), (int)( w.y/fig_scaley));
-	}
-	
-	Point2d fig2world(const FIG::FIGPoint& f) {
-		return Point2d(f.x*fig_scalex, f.y*fig_scaley);
-	}
-	
-	void fig2world(const FIG::FIGPoint& f, Point2d& p) {
-		p.x = f.x * fig_scalex;
-		p.y = f.y * fig_scaley;
-	}
-	
-	
-	int world2fig(double d) {
-		return (int)(d/fig_scalex);
-	}
+		}		
+	};
 
-	double fig2world(int i) {
-		return i*fig_scalex;
-	}
-	///////////
+	bool Environment::ray_tracing(const double p[2], const double direction,  double& out_distance, double &out_alpha, int*stuff_id) const {
 	
-	void Map::loadFig(FIG::Figure&fig) {
-		clear();
-	
-		// Number of added segments
-		int nsegs = 0;
-		
-		for(FIG::Figure::FigureIterator i = fig.beginTree(); i != fig.endTree(); ++i) {
-			FIG::Poly * poly;
-			if((poly=dynamic_cast<FIG::Poly*> (*i)))
-				for(unsigned int a=0;a<poly->size()-1;a++) {
-					Segment s;
-					s.p[0] = fig2world((*poly)[a]);
-					s.p[1] = fig2world((*poly)[a+1]);
-
-/*					if(poly->depth >= L_DECORATIVE_MIN && poly->depth <= L_DECORATIVE_MAX) {
-						s.obstType = ObstIgnore;
-						s.laserType = LaserIgnore;
-						continue;
-					} */
-					
-					if(poly->depth >= L_BOTH_MIN && poly->depth <= L_BOTH_MAX) {
-						s.obstType = ObstSolid;
-						s.laserType = LaserSolid;
-					}
-					else
-					if(poly->depth >= L_ONLYROBOT_MIN && poly->depth <= L_ONLYROBOT_MAX) {
-						s.obstType = ObstSolid;
-						s.laserType = LaserIgnore;
-					}
-					else
-					if(poly->depth == L_DUMMY) {
-						s.obstType = ObstIgnore;
-						s.laserType = LaserIgnore;
-					}
-					else continue;
-					
-					cerr << "Segment " << s.p[0].toString() << " -> "
-						<< s.p[1].toString() << endl; 
-					//cerr << (*poly)[a].x << (*poly)[a].y << endl;
-					push_back(s);
-					nsegs++;
+		int champion = -1;
+		double champion_range, champion_alpha;
+		for(size_t i=0;i<stuff.size();i++) {
+			Stuff * s = stuff.at(i);
+			
+			double range, alpha;
+			if(s->ray_tracing(p,direction,range,alpha)){
+				if(range<champion_range || champion==-1) {
+					champion = i;
+					champion_range = range;
+					champion_alpha = alpha;
 				}
-		}
+			}
 			
-		std::cerr << "Loaded map with " << nsegs << " segments." << std::endl;
+		}
+		
+		if(champion != -1) {
+			*stuff_id = champion;
+			out_distance = champion_range;
+			out_alpha = champion_alpha;
+		
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
+	/*
 	
 	LaserData Map::rayTracing(
 		Point2od pose, double fov_rad, int nrays, double maxReading) 
@@ -211,35 +112,5 @@ namespace PPU {
 		}
 	}
 	
-		
-	Viewport Map::getBoundingBox() {  
-		Point2d rmin(DBL_MAX,DBL_MAX), rmax(-DBL_MAX,-DBL_MAX);
-		
-		for (unsigned int i = 0; i < size(); i++) {
-			rmin = Point2d::min(rmin, at(i).p[0]);
-			rmax = Point2d::max(rmax, at(i).p[0]);
-			rmin = Point2d::min(rmin, at(i).p[1]);
-			rmax = Point2d::max(rmax, at(i).p[1]);
-		}
-		
-		return Viewport(rmin,rmax);
-	}
-	
-	OUT_OP(Point2d  ) { return stream << ob.x << " " << ob.y;                        }
-	OUT_OP(Segment) { return stream << ob.p[0] << endl << ob.p[1] << endl << endl; }
-	OUT_OP(Map    ) {
-		for(Map::const_iterator i=ob.begin();i!=ob.end();i++) stream << *i;
-		return stream;
-	}
-	
-	IN_OP(Point2d  ) { return stream >> ob.x >> ob.y; }
-	IN_OP(Segment) { return stream >> ob.p[0] >> ob.p[1]; }
-	IN_OP(Map    ) {
-		while(stream) {
-			Segment s; stream >> s; ob.push_back(s);
-		}
-		return stream;
-	}
-
-
+	*/
 } // namespace SimpleMap
