@@ -1,0 +1,26 @@
+{ 
+	"class": "map", 
+
+	"objects": [
+		{ 
+			"class": "polyline", "surface": 0,  
+			"points": [ [-1, -1], [-1, 1], [1, 1], [1, -1], [-1, -1] ],
+			"texture":  "lambda x: sign(sin(x))"
+		},
+			
+		{
+		 	"class": "circle", "surface": 1,  "radius": 10, "center": [0,0] 
+		}
+	]
+}
+{ 
+	"class": "sensor", 
+	"directions": [-1.57, -0.78, 0, 0.78, 1.57]
+}
+{ "class": "query", "position": [0,0], "orientation": 0 }
+{ "class": "query", "position": [0,0], "orientation": 0 }
+{ "class": "query", "position": [0,0], "orientation": 0 }
+{ "class": "query", "position": [0,0], "orientation": 0 }{ "class": "query", "position": [0,0], "orientation": 0 }{ "class": "query", "position": [0,0], "orientation": 0 }
+{ "class": "query", "position": [0,0], "orientation": 0 }
+{ "class": "query", "position": [0,0], "orientation": 0 }
+{ "class": "query", "position": [0,0], "orientation": 0 }
