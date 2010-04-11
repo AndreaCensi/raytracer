@@ -9,30 +9,44 @@ namespace RayTracer {
 	
 	using namespace std;
 	
+	struct Stuff;
+	struct Environment  {
+		std::vector<Stuff*> stuff;
+
+		bool ray_tracing(const double p[2], const double direction,  double& out_distance, double &out_alpha, int& surface, int&region, double&coord) const ;
+		
+		/** Checks whether the specified circle intersects something */
+		bool check_circle_intersection(const double center[2], const double radius, int&surface_id) const;
+	};
+	
+	
+	
+	#if 0
 	struct Material {
 		string name;
 		
 		/* 0: transparent; 1: solid; in between: randomly */
 		double infrared_solid;
 	};
+	#endif
 	
 	struct Stuff {
 		int surface_id;
 		
-		Material * material;
+	//	Material * material;
 		
 		/** Ray tracing with incidence. */
 		virtual bool ray_tracing(const double p[2], const double direction, double& out_distance, double &out_alpha, int&region, double&coord) const = 0; 	
 	
+		virtual bool check_circle_intersection(
+			const double center[2],
+			const double radius, 
+			double &distance,
+			double &angle) const  = 0;
+			
 		virtual ~Stuff() { }
 	};
 	
-	
-	struct Environment  {
-		std::vector<Stuff*> stuff;
-
-		bool ray_tracing(const double p[2], const double direction,  double& out_distance, double &out_alpha, int& surface, int&region, double&coord) const ;
-	};
 	
 	
 	
@@ -50,6 +64,11 @@ namespace RayTracer {
 		}
 		
 		bool ray_tracing(const double p[2], const double direction, double& out_distance, double &out_alpha, int&region, double&coord) const;
+		bool check_circle_intersection(
+				const double center[2],
+				const double radius, 
+				double &distance_to_impact,
+				double &angle) const;
 		
 		double getSegmentLength();
 		virtual ~Segment() {};
@@ -57,10 +76,17 @@ namespace RayTracer {
 
 	struct Circle: public Stuff {
 		double center[2], radius;
+		int solid_inside;
 		
 		Circle() {}
 		
 		bool ray_tracing(const double p[2], const double direction,  double& out_distance, double &out_alpha, int&region, double&coord) const;
+		bool check_circle_intersection(
+				const double center[2],
+				const double radius, 
+				double &distance_to_impact,
+				double &angle) const;
+		
 		
 		virtual ~Circle() {};
 	};

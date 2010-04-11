@@ -23,5 +23,11 @@ int is_nan(double v);
 /** Returns true if any value in d is NAN */
 int any_nan(const double *d, int n);
 
+/** Projection of P on the SEGMENT A-B */
+void projection_on_segment_d(
+	const double a[2],
+	const double b[2],
+	const double P[2],
+   double proj[2]);
 
 #endif

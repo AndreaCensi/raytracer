@@ -60,7 +60,7 @@ int main(int argc, const char** argv)
 			expect(jo_read_from_double_array(jo_directions, directions_d, num_directions, NAN));
 			directions = vector<double>(directions_d, directions_d + num_directions);
 			
-		} else if(class_name == "query") {
+		} else if(class_name == "query_sensor") {
 			double position[2]; double orientation;
 			expect(jo_read_double(jo, "orientation", &orientation));
 			expect(jo_read_double_array(jo, "position", position, 2, NAN));
@@ -71,9 +71,33 @@ int main(int argc, const char** argv)
 			}
 			
 			JO response = query_environment(env, position, orientation, directions);
+			jo_add_string(response, "class",  "query_sensor_response");
+			
 			std::cout << json_object_to_json_string(response) << std::endl;
 			std::cout.flush();
 			jo_free(response);
+		} else if(class_name == "query_circle") {
+			double center[2]; double radius;
+			expect(jo_read_double(jo, "radius", &radius));
+			expect(jo_read_double_array(jo, "center", center, 2, NAN));
+
+			if(is_nan(radius) || any_nan(center, 2)) {
+				sm_error("Invalid pose (%f,%f,%f)\n", center[0],center[1],radius);
+				return -5;
+			}
+
+			int surface_id = -1;
+			bool intersect = env.check_circle_intersection(center, radius, surface_id);
+			
+			JO response = json_object_new_object();
+			jo_add_string(response, "class",  "query_circle_response");
+			jo_add_int(response, "intersects",  intersect ? 1 : 0);
+			jo_add_int(response, "surface",  surface_id);
+			
+			std::cout << json_object_to_json_string(response) << std::endl;
+			std::cout.flush();
+			jo_free(response);
+
 
 		} else {
 			sm_error("Uknown class %s\n", class_name.c_str());
@@ -163,7 +187,8 @@ bool load_env_from_json(Environment& env, JO jo_map) {
 				env.stuff.push_back(s);
 			}
 		} else if( class_name == "circle" ) {
-			double position[2]; double radius;
+			double position[2]; double radius; int solid_inside;
+			expect(jo_read_int(jo, "solid_inside", &solid_inside));
 			expect(jo_read_double(jo, "radius", &radius));
 			expect(jo_read_double_array(jo, "center", position, 2, NAN));
 			int surface;
@@ -173,6 +198,7 @@ bool load_env_from_json(Environment& env, JO jo_map) {
 			c->center[0] = position[0];
 			c->center[1] = position[1];
 			c->radius = radius;
+			c->solid_inside = solid_inside;
 			env.stuff.push_back(c);
 		} else {
 			sm_error("unknown object type: '%s'\n", jo_get_string(jo_type));

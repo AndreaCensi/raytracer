@@ -3,8 +3,10 @@
 #include "simplemap.h"
 #include "math_utils.h"
 
+/** Note that we need sign(0) = 1 to obtain the current results in intersect_ray_and_circle */
 int sign(double x) {
-	return x > 0 ? 1 : (x==0 )? 0 : -1;
+//	return x > 0 ? 1 : (x==0 )? 0 : -1;
+	return x >= 0 ? 1 : -1;
 }
 
 int intersect_ray_and_circle(const double center_in[2], const double radius, const double eye_position_in[2], const double eye_orientation, double * reading, double * coord) {
@@ -12,9 +14,10 @@ int intersect_ray_and_circle(const double center_in[2], const double radius, con
 	if(coord) *coord = NAN;
 	
 	// First of all, translate coordinates such that the circle is at (0,0)
-	double eye_position[2];
-	eye_position[0] = eye_position_in[0]-center_in[0];
-	eye_position[1] = eye_position_in[0]-center_in[0];
+	double eye_position[2] = {
+		eye_position_in[0]-center_in[0],
+		eye_position_in[1]-center_in[1]
+	};
 	double center[2] = {0,0};
 	
 	// next follows the algorithm from 
@@ -40,6 +43,20 @@ int intersect_ray_and_circle(const double center_in[2], const double radius, con
 	p2[0] = (D * d_y - sign(d_y) * d_x * sqrt(delta)) / (d_r*d_r);
 	p1[1] = (-D * d_x + fabs(d_y) * sqrt(delta)) / (d_r*d_r);
 	p2[1] = (-D * d_x - fabs(d_y) * sqrt(delta)) / (d_r*d_r);
+
+	if(0) {
+		printf("\n---\n center: %f %f radius %f \n", center_in[0], center_in[1], radius);
+		printf(" eye: %f %f direction %f \n", 
+			eye_position_in[0], eye_position_in[1], eye_orientation);
+		printf(" distance: %f, %f radius  %f  \n", distance_d(p1, center),
+			distance_d(p2, center) , radius ) ;
+		printf(" delta: %f \n", delta);
+		printf(" D: %f \n", D);
+		printf(" d_r: %f \n", d_r);
+		printf(" d_x: %f \n", d_x);
+		printf(" d_y: %f \n", d_y);
+	}
+
 
 	// check they are on the circle
 	double tolerance = 1e-5;
@@ -72,6 +89,78 @@ int intersect_ray_and_circle(const double center_in[2], const double radius, con
 
 namespace RayTracer {
 	using namespace std;
+	
+	
+	bool Environment::check_circle_intersection(const double center[2], const double radius, int&surface_id) const {
+		for(size_t i=0;i<stuff.size();i++) {
+			Stuff * s = stuff.at(i);
+			double distance; double angle;
+			if(s->check_circle_intersection(center,radius, distance,angle)) {
+				surface_id = s->surface_id;
+				return true;
+			}
+		}
+		surface_id = -1;
+		return false;
+	}
+
+	
+	bool Circle::check_circle_intersection(
+			const double center[2],
+			const double radius, 
+			double &distance_to_impact,
+			double &angle) const  {
+		
+		distance_to_impact = NAN;
+		angle = NAN;
+
+		double distance = distance_d(center, this->center);
+		
+		bool circles_intersect_or_contained = distance < radius + this->radius;
+		// bool area_contains_obstacle_entirely = distance < radius;
+		bool obstacle_contains_area_entirely = distance < this->radius;
+		
+		
+		if (!circles_intersect_or_contained)
+			return false;
+		
+		if (!this->solid_inside && obstacle_contains_area_entirely) 
+			return false;
+		
+		distance_to_impact = distance - this -> radius;
+		angle = atan2( this->center[1]-center[1], this->center[0]-center[0]);
+		
+		return true;
+	}
+
+	
+	bool Segment::check_circle_intersection(
+			const double center[2],
+			const double radius, 
+			double &distance_to_impact,
+			double &angle) const  {
+		
+		double projection[2];
+		projection_on_segment_d(this->p0, this->p1, center, projection);
+		distance_to_impact = distance_d(center, projection);
+		
+		if (distance_to_impact > radius) {
+			distance_to_impact = NAN;
+			angle = NAN;
+			return false;
+		}
+		
+		angle = atan2(projection[1]-center[1],projection[0]-center[0]);
+		
+		if(0) {
+			printf("---\n S (%f,%f) -> (%f,%f)  intersects (%f,%f) r %f \n",
+				p0[0],p0[1],p1[0],p1[1], center[0],center[1],radius);
+			printf("Projection is (%f,%f)\n", projection[0], projection[1]);
+			printf("distance is %f \n", distance_to_impact);
+		}
+	
+		return true;
+	}
 	
 	bool Circle::ray_tracing(const double p[2], const double direction,  double& out_distance, double &out_alpha, int&region, double&out_coord) const {
 		double distance, angle; 

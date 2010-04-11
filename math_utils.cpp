@@ -90,3 +90,50 @@ int any_nan(const double *d, int n) {
 			return 1;
 	return 0;
 }
+
+
+
+
+void projection_on_line_d(const double a[2],
+	const double b[2],
+	const double p[2],
+	double res[2], double *distance)
+{
+	double t0 = a[0]-b[0];
+	double t1 = a[1]-b[1];
+	double one_on_r = 1 / sqrt(t0*t0+t1*t1);
+	/* normal */
+	double nx = t1  * one_on_r ;
+	double ny = -t0 * one_on_r ;
+	double c= nx, s = ny; 
+	double rho = c*a[0]+s*a[1];
+
+	res[0] =   c*rho + s*s*p[0] - c*s*p[1] ;
+	res[1] =   s*rho - c*s*p[0] + c*c*p[1] ;	
+	
+	if(distance)
+		*distance = fabs(rho-(c*p[0]+s*p[1]));
+}
+
+void copy_d(const double*from, int n, double*to) {
+	int i; for(i=0;i<n;i++) to[i] = from[i];
+}
+
+
+void projection_on_segment_d(
+	const double a[2],
+	const double b[2],
+	const double x[2],
+	double proj[2]) 
+{
+	projection_on_line_d(a,b,x,proj,0);
+	if ((proj[0]-a[0])*(proj[0]-b[0]) +
+	    (proj[1]-a[1])*(proj[1]-b[1]) < 0 ) {
+		/* the projection is inside the segment */
+	} else 
+		if(distance_squared_d(a,x) < distance_squared_d(b,x)) 
+			copy_d(a,2,proj);
+		else
+			copy_d(b,2,proj);
+}
+
