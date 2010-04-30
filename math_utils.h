@@ -31,3 +31,4 @@ void projection_on_segment_d(
    double proj[2]);
 
 #endif
+

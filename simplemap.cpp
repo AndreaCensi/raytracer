@@ -209,8 +209,8 @@ namespace RayTracer {
 	bool Environment::ray_tracing(const double p[2], const double direction,  double& out_distance, double &out_alpha, int& surface, int&region, double&coord) const {
 	
 		int champion = -1;
-		double champion_range, champion_alpha;
-		int champion_region; double champion_coord;
+		double champion_range=NAN, champion_alpha=NAN;
+		int champion_region=-1; double champion_coord=-1;
 		
 		for(size_t i=0;i<stuff.size();i++) {
 			Stuff * s = stuff.at(i);
