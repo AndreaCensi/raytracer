@@ -47,6 +47,7 @@ int main(int argc, const char** argv)
 		string class_name = jo_get_string(jo_class);
 		
 		if(class_name == "map") {
+			env = Environment();
 			if(!load_env_from_json(env, jo)) {
 				sm_error("Could not properly load map.\n");
 				return -4;
