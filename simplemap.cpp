@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "simplemap.h"
 #include "math_utils.h"
+#include <stdio.h>
 
 /** Note that we need sign(0) = 1 to obtain the current results in intersect_ray_and_circle */
 int sign(double x) {
