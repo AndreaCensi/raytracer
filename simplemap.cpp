@@ -138,25 +138,21 @@ namespace RayTracer {
 		
 		
 		int hit = -1;
-		int branch = -1;
-		
+
 		if (outside) {
-			branch = 1;
 			hit = radius2 + this->radius > distance;
 		} else {
 			if (this->solid_inside) {
-				branch = 2;
 				hit = true;
 			} else {
-				branch = 3;
 				hit = (radius2 > this->radius - distance);
 			}
 		}
 		
 
-		fprintf(stderr, "This %f,%f,%f  Test %f,%f,%f Distance %f outside %d hit %d (b:%d)\n",
-			center[0],center[1],radius, 
-			center2[0],center2[1],radius2, distance, outside, hit, branch);
+	//	fprintf(stderr, "This %f,%f,%f  Test %f,%f,%f Distance %f outside %d hit %d (b:%d)\n",
+	//		center[0],center[1],radius, 
+	//		center2[0],center2[1],radius2, distance, outside, hit, branch);
 		
 		return hit;
 		 
