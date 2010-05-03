@@ -4,7 +4,8 @@
 using namespace CSM;
 using namespace RayTracer;
 
-bool load_env_from_json(Environment& env, JO jo);
+/* 0 for success */
+int load_env_from_json(Environment& env, JO jo);
 
 #define jo_expect_array(a) (a!=0 && json_object_is_type(a, json_type_array))
 #define jo_expect_object(a) (a!=0 &&  json_object_is_type(a, json_type_object))
@@ -48,7 +49,7 @@ int main(int argc, const char** argv)
 		
 		if(class_name == "map") {
 			env = Environment();
-			if(!load_env_from_json(env, jo)) {
+			if(0 != load_env_from_json(env, jo)) {
 				sm_error("Could not properly load map.\n");
 				return -4;
 			}
@@ -151,8 +152,9 @@ JO query_environment(Environment&env, double position[2], double orientation, ve
 	return response;
 }
  
-
-bool load_env_from_json(Environment& env, JO jo_map) {
+/** Returns 0 for success */
+int load_env_from_json(Environment& env, JO jo_map) {
+	
 	jo_expect_object(jo_map);
 	
 	JO jo_objects = json_object_object_get(jo_map, "objects");
@@ -203,10 +205,10 @@ bool load_env_from_json(Environment& env, JO jo_map) {
 			env.stuff.push_back(c);
 		} else {
 			sm_error("unknown object type: '%s'\n", jo_get_string(jo_type));
-			return false;
+			return -1;
 		}
 	}
 	
-	return true;
+	return 0;
 }
 

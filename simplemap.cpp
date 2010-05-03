@@ -101,37 +101,65 @@ namespace RayTracer {
 				return true;
 			}
 		}
-		surface_id = -1;
+		surface_id = -stuff.size()-1000;
 		return false;
 	}
 
 	
 	bool Circle::check_circle_intersection(
-			const double center[2],
-			const double radius, 
+			const double center2[2],
+			const double radius2, 
 			double &distance_to_impact,
 			double &angle) const  {
-		
 		distance_to_impact = NAN;
 		angle = NAN;
+		
 
-		double distance = distance_d(center, this->center);
+		/* OK let's start. This is not as easy as it seems. 
 		
-		bool circles_intersect_or_contained = distance < radius + this->radius;
-		// bool area_contains_obstacle_entirely = distance < radius;
-		bool obstacle_contains_area_entirely = distance < this->radius;
+		The semantics is:  is *any* point of "this" inside the area given by center, radius?
+		There are two cases: "this" circle is hollow, and "this" circle is solid.
+
+		* the interesction circle is outside
+			- hit if radius + this->radius > distance
+		* the interesction circle is inside
+			* Hollow circle:
+				- hit if radius > (this->radius - distance)
+			* Solid circle:
+				- always hit!
+		*/
 		
 		
-		if (!circles_intersect_or_contained)
-			return false;
-		
-		if (!this->solid_inside && obstacle_contains_area_entirely) 
-			return false;
-		
+		double distance = distance_d(center2, this->center);
+		// XXX these not really ok
 		distance_to_impact = distance - this -> radius;
-		angle = atan2( this->center[1]-center[1], this->center[0]-center[0]);
+		angle = atan2( this->center[1]-center2[1], this->center[0]-center2[0]);
+		bool outside = distance > this->radius;
 		
-		return true;
+		
+		int hit = -1;
+		int branch = -1;
+		
+		if (outside) {
+			branch = 1;
+			hit = radius2 + this->radius > distance;
+		} else {
+			if (this->solid_inside) {
+				branch = 2;
+				hit = true;
+			} else {
+				branch = 3;
+				hit = (radius2 > this->radius - distance);
+			}
+		}
+		
+
+		fprintf(stderr, "This %f,%f,%f  Test %f,%f,%f Distance %f outside %d hit %d (b:%d)\n",
+			center[0],center[1],radius, 
+			center2[0],center2[1],radius2, distance, outside, hit, branch);
+		
+		return hit;
+		 
 	}
 
 	
