@@ -1,6 +1,10 @@
 #include <math.h>
 #include "math_utils.h"
 
+double nan() {
+	double f = 0.0;
+	return f/f;
+}
 double distance_squared_d(const double a[2], const double b[2]) {
 	double x = a[0]-b[0];
 	double y = a[1]-b[1];

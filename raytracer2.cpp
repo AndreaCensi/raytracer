@@ -1,7 +1,10 @@
 #include "simplemap.h"
 #include <json-c/json.h>
-#include <csm/csm_all.h>
-using namespace CSM;
+#include <math.h>
+#include "math_utils.h"
+// XXX make it right
+#define sm_error printf  
+
 using namespace RayTracer;
 
 /* 0 for success */

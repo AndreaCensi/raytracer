@@ -30,5 +30,9 @@ void projection_on_segment_d(
 	const double P[2],
    double proj[2]);
 
+double nan();
+
+//#define NAN nan()
+
 #endif
 

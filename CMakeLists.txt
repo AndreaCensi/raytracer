@@ -3,19 +3,19 @@ cmake_minimum_required(VERSION 2.4)
 project(simplemap2)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(CSM REQUIRED csm)
+pkg_check_modules(JSONC REQUIRED json-c)
 
-IF(${CSM_FOUND})
-	MESSAGE("CSM_LIBRARY_DIRS: ${CSM_LIBRARY_DIRS}")
-	MESSAGE("CSM_LIBRARIES: ${CSM_LIBRARIES}")
-	MESSAGE("CSM_INCLUDE_DIRS: ${CSM_INCLUDE_DIRS}")
+IF(${JSONC_FOUND})
+	MESSAGE("JSONC_LIBRARY_DIRS: ${JSONC_LIBRARY_DIRS}")
+	MESSAGE("JSONC_LIBRARIES: ${JSONC_LIBRARIES}")
+	MESSAGE("JSONC_INCLUDE_DIRS: ${CJSONC_INCLUDE_DIRS}")
 
-	INCLUDE_DIRECTORIES(${CSM_INCLUDE_DIRS})
-	LINK_DIRECTORIES(${CSM_LIBRARY_DIRS})
+	INCLUDE_DIRECTORIES(${JSONC_INCLUDE_DIRS})
+	LINK_DIRECTORIES(${JSONC_LIBRARY_DIRS})
 
-ELSE(${CSM_FOUND})	
-	MESSAGE(FATAL_ERROR "CSM not found. Check that the environment variable PKG_CONFIG_PATH includes the path containing the file 'csm.pc'.")
-ENDIF(${CSM_FOUND})		
+ELSE(${JSONC_FOUND})	
+	MESSAGE(FATAL_ERROR "JSONC not found. Check that the environment variable PKG_CONFIG_PATH includes the path containing the file 'json-c.pc'.")
+ENDIF(${JSONC_FOUND})		
 
 set(raytracer_SRCS
 	simplemap.cpp
@@ -27,7 +27,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Wall")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 add_executable(raytracer2 raytracer2.cpp ${raytracer_SRCS})
-target_link_libraries(raytracer2 ${CSM_LIBRARIES})
+target_link_libraries(raytracer2 ${JSONC_LIBRARIES})
 INSTALL(PROGRAMS raytracer2  DESTINATION bin)
 
 
