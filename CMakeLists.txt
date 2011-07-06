@@ -20,6 +20,7 @@ ENDIF(${JSONC_FOUND})
 set(raytracer_SRCS
 	simplemap.cpp
 	math_utils.cpp
+	raytracer_json_load.cpp
 )
 
 

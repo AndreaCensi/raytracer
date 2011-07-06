@@ -1,36 +1,20 @@
-#include "simplemap.h"
 #include <json-c/json.h>
 #include <math.h>
+#include "simplemap.h"
 #include "math_utils.h"
-// XXX make it right
-#define sm_error printf  
+#include "macros.h"
 
 using namespace RayTracer;
+using namespace std;
+
 
 /* 0 for success */
 int load_env_from_json(Environment& env, JO jo);
+int add_circle(Environment& env, JO jo);
+int add_polyline(Environment& env, JO jo);
 
-#define jo_expect_array(a) (a!=0 && json_object_is_type(a, json_type_array))
-#define jo_expect_object(a) (a!=0 &&  json_object_is_type(a, json_type_object))
-#define jo_expect_string(a) (a!=0 && json_object_is_type(a, json_type_string))
-#define jo_expect_double(a) (a!=0 && json_object_is_type(a, json_type_double))
-#define jo_expect_array_size(a,n) ( (a!=0) && (json_object_is_type(a, json_type_array)&& (jo_array_length(a)==n)))
-#define jo_expect_array_size_min(a,n) ( (a!=0) && (json_object_is_type(a, json_type_array)&& (jo_array_length(a)>=n)))
-
-
-#define expect(a) if(!a) { \
-		sm_error("Invalid format: \n\t %s \n", #a); \
-			return -3; \
-		}
-
-#define expect_s(a, s) if(!a) { \
-		sm_error("Invalid format: %s \n\t %s \n", s, #a); \
-			return -2; \
-		}
-		
-using namespace std;
-
-JO query_environment(Environment&env, double position[2], double orientation, vector<double>& directions);
+JO query_environment(Environment&env, 
+	double position[2], double orientation, vector<double>& directions);
 
 int main(int argc, const char** argv)
 {
@@ -56,6 +40,12 @@ int main(int argc, const char** argv)
 				sm_error("Could not properly load map.\n");
 				return -4;
 			}
+		} else if(class_name == "add_circle") {
+			// XXX: error handling
+			add_circle(env, jo);
+		} else if(class_name == "add_polyline") {
+			// XXX: error handling
+			add_polyline(env, jo);
 		} else if(class_name == "sensor") {
 			JO jo_directions = json_object_object_get(jo, "directions");
 				expect(jo_expect_array(jo_directions));
@@ -105,7 +95,7 @@ int main(int argc, const char** argv)
 
 
 		} else {
-			sm_error("Uknown class %s\n", class_name.c_str());
+			sm_error("Unknown message '%s'.\n", class_name.c_str());
 			return -3;
 		}
 		
@@ -155,63 +145,4 @@ JO query_environment(Environment&env, double position[2], double orientation, ve
 	return response;
 }
  
-/** Returns 0 for success */
-int load_env_from_json(Environment& env, JO jo_map) {
-	
-	jo_expect_object(jo_map);
-	
-	JO jo_objects = json_object_object_get(jo_map, "objects");
-		expect(jo_expect_array(jo_objects));
-	
-	for(int i=0; i < jo_array_length(jo_objects); i++) {
-		JO jo = jo_array_get(jo_objects, i);
-			expect(jo_expect_object(jo));
-		
-		JO jo_type = jo_get(jo, "class"); 
-			expect(jo_expect_string(jo_type));
-		string class_name = jo_get_string(jo_type);
-			
-		if(class_name == "polyline") {
-			
-			int surface;
-			expect(jo_read_int(jo, "surface", &surface));
-			
-			JO points = jo_get(jo, "points");
-			expect(jo_expect_array_size_min(points, 2));
-			
-			double current_coord = 0;
-			for(int p=0;p<jo_array_length(points)-1;p++) {
-				Segment * s = new Segment();
-				s->surface_id = surface;
-				s->region_id = 0;
-				expect(jo_read_from_double_array (jo_array_get(points, p  ), s->p0, 2, NAN));
-				expect(jo_read_from_double_array (jo_array_get(points, p+1), s->p1, 2, NAN));
-				double seg_size = s->getSegmentLength();
-				s->t0 = current_coord;
-				s->t1 = current_coord + seg_size;
-				current_coord += seg_size;
-				env.stuff.push_back(s);
-			}
-		} else if( class_name == "circle" ) {
-			double position[2]; double radius; int solid_inside;
-			expect(jo_read_int(jo, "solid_inside", &solid_inside));
-			expect(jo_read_double(jo, "radius", &radius));
-			expect(jo_read_double_array(jo, "center", position, 2, NAN));
-			int surface;
-			expect(jo_read_int(jo, "surface", &surface));
-			Circle *c = new Circle();
-			c->surface_id = surface;
-			c->center[0] = position[0];
-			c->center[1] = position[1];
-			c->radius = radius;
-			c->solid_inside = solid_inside;
-			env.stuff.push_back(c);
-		} else {
-			sm_error("unknown object type: '%s'\n", jo_get_string(jo_type));
-			return -1;
-		}
-	}
-	
-	return 0;
-}
 

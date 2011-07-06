@@ -17,24 +17,13 @@ namespace RayTracer {
 		
 		/** Checks whether the specified circle intersects something */
 		bool check_circle_intersection(const double center[2], const double radius, int&surface_id) const;
-	};
-	
-	
-	
-	#if 0
-	struct Material {
-		string name;
 		
-		/* 0: transparent; 1: solid; in between: randomly */
-		double infrared_solid;
+		bool remove(int surface_id);
 	};
-	#endif
 	
 	struct Stuff {
 		int surface_id;
-		
-	//	Material * material;
-		
+		 
 		/** Ray tracing with incidence. */
 		virtual bool ray_tracing(const double p[2], const double direction, double& out_distance, double &out_alpha, int&region, double&coord) const = 0; 	
 	
@@ -45,10 +34,7 @@ namespace RayTracer {
 			double &angle) const  = 0;
 			
 		virtual ~Stuff() { }
-	};
-	
-	
-	
+	}; 
 	
 	struct Segment: public Stuff {
 		int region_id;
@@ -90,9 +76,6 @@ namespace RayTracer {
 		
 		virtual ~Circle() {};
 	};
-	
-	
-
 	
 }
 

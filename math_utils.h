@@ -32,7 +32,5 @@ void projection_on_segment_d(
 
 double nan();
 
-//#define NAN nan()
-
 #endif
 

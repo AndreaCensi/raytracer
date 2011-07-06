@@ -1,18 +1,15 @@
 { 
-	"class": "map", 
+    "class": "add_polyline", 
+    "surface": 0, 
+    "points": [ [-1, -1], [-1, 1], [1, 1], [1, -1], [-1, -1] ]
+}
 
-	"objects": [
-		{ 
-			"class": "polyline", "surface": 0,  
-			"points": [ [-1, -1], [-1, 1], [1, 1], [1, -1], [-1, -1] ],
-			"texture":  "lambda x: sign(sin(x))"
-		},
-			
-		{
-		 	"class": "circle", "surface": 1,  "radius": 10, "center": [0,0], 
-			"solid_inside": 0
-		}
-	]
+{ 
+    "class": "add_circle",  
+    "surface": 1,  
+    "radius": 10, 
+    "center": [0,0], 
+	"solid_inside": 0
 }
 
 { 

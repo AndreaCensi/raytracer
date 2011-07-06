@@ -265,5 +265,10 @@ namespace RayTracer {
 			return false;
 		}
 	}
-	
+
+bool Environment::remove(int surface_id) {
+	// TODO
+}
+		
+		
 } // namespace SimpleMap
