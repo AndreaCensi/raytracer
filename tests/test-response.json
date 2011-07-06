@@ -1,0 +1,6 @@
+{ "readings": [ 1.000000e+00, 1.406641e+00, 1.0, 1.406641e+00, 1.000000e+00 ], "normal": [ 1.570796e+00, 3.141593e+00, 0.0, 3.141593e+00, 4.712389e+00 ], "valid": [ 1, 1, 1, 1, 1 ], "surface": [ 0, 0, 0, 0, 0 ], "region": [ 0, 0, 0, 0, 0 ], "curvilinear_coordinate": [ 6.999204e+00, 5.989262e+00, 5.0, 4.010738e+00, 3.000796e+00 ], "class": "query_sensor_response" }
+{ "class": "query_circle_response", "intersects": 1, "surface": 0 }
+{ "class": "query_circle_response", "intersects": 0, "surface": -1005 }
+{ "class": "query_circle_response", "intersects": 1, "surface": 0 }
+{ "class": "query_circle_response", "intersects": 1, "surface": 1 }
+{ "class": "query_circle_response", "intersects": 0, "surface": -1005 }
