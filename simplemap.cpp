@@ -268,7 +268,15 @@ namespace RayTracer {
 
 bool Environment::remove(int surface_id) {
 	// TODO
+	for(size_t i=0;i<stuff.size();i++)
+		if (stuff[i]->surface_id == surface_id) {
+			delete stuff[i];
+			stuff.erase(stuff.begin()+i);
+			return true;
+		}
+	return false;
 }
+
 		
 		
 } // namespace SimpleMap

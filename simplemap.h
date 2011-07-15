@@ -12,6 +12,7 @@ namespace RayTracer {
 	struct Stuff;
 	struct Environment  {
 		std::vector<Stuff*> stuff;
+		
 
 		bool ray_tracing(const double p[2], const double direction,  double& out_distance, double &out_alpha, int& surface, int&region, double&coord) const ;
 		
