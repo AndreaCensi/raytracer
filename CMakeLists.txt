@@ -24,8 +24,9 @@ set(raytracer_SRCS
 )
 
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Wall")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 add_executable(raytracer2 raytracer2.cpp ${raytracer_SRCS})
 target_link_libraries(raytracer2 ${JSONC_LIBRARIES})
