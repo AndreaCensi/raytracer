@@ -1,0 +1,9 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: json-c
+Description: json-c JSON parsing libraries for C -- updates by Andrea Censi
+Version: 0.9-andreacensi
+Libs:  -L${libdir} -ljson-c
+Cflags:  -I${includedir}
