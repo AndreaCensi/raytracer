@@ -266,14 +266,26 @@ namespace RayTracer {
 		}
 	}
 
-bool Environment::remove(int surface_id) {
-	// TODO
+
+Stuff* Environment::find_surface(int surface_id) {
 	for(size_t i=0;i<stuff.size();i++)
 		if (stuff[i]->surface_id == surface_id) {
-			delete stuff[i];
-			stuff.erase(stuff.begin()+i);
-			return true;
+			return stuff[i];
 		}
+	return NULL;
+}
+
+bool Environment::remove(int surface_id) {
+	while(true) {
+		bool found = false ;
+		for(size_t i=0;i<stuff.size();i++)
+			if (stuff[i]->surface_id == surface_id) {
+				delete stuff[i];
+				stuff.erase(stuff.begin()+i);
+				found  = true;
+			}
+		if(!found) break;
+	}
 	return false;
 }
 

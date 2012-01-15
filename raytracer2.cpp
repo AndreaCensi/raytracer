@@ -93,11 +93,14 @@ int main(int argc, const char** argv)
 			std::cout.flush();
 			jo_free(response);
 
-
 		} else {
 			sm_error("Unknown message '%s'.\n", class_name.c_str());
 			return -3;
 		}
+
+		//for(int a =0; a<env.stuff.size();a++) {
+		//	fprintf(stderr, " stuff[%d] id %d\n", a, env.stuff[a]->surface_id);
+		//}
 		
 		jo_free(jo);
 	}

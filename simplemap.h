@@ -19,6 +19,7 @@ namespace RayTracer {
 		/** Checks whether the specified circle intersects something */
 		bool check_circle_intersection(const double center[2], const double radius, int&surface_id) const;
 		
+		Stuff* find_surface(int surface_id);
 		bool remove(int surface_id);
 	};
 	

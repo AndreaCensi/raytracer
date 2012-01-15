@@ -49,6 +49,9 @@ int add_circle(Environment&env, JO jo) {
 	c->radius = radius;
 	c->solid_inside = solid_inside;
 	env.stuff.push_back(c);
+
+	//fprintf(stderr, "Added surface %d center %f %f; total is %d.\n",
+	//		surface, position[0],position[1], env.stuff.size() );
 	return 0;
 }
 
