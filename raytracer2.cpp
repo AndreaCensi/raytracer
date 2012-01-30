@@ -3,6 +3,7 @@
 #include "simplemap.h"
 #include "math_utils.h"
 #include "macros.h"
+#include <ctime>
 
 using namespace RayTracer;
 using namespace std;
@@ -24,12 +25,18 @@ int main(int argc, const char** argv)
 	FILE * file_input = stdin;
 	
 	while(1) { 
+		
 		JO jo = json_read_stream(file_input); 
 		if(!jo) {
 			if(feof(file_input)) break;
 			sm_error("Could not read JSON.\n");
 			return -3;
 		}
+	
+		clock_t c0 = clock();
+		time_t t0;  time(&t0);
+		
+	
 		JO jo_class = json_object_object_get(jo, "class");
 			expect(jo_expect_string(jo_class));
 		string class_name = jo_get_string(jo_class);
@@ -65,7 +72,8 @@ int main(int argc, const char** argv)
 				return -5;
 			}
 			
-			JO response = query_environment(env, position, orientation, directions);
+			JO response = query_environment(env, position, orientation,
+					 						directions);
 			jo_add_string(response, "class",  "query_sensor_response");
 			
 			std::cout << json_object_to_json_string(response) << std::endl;
@@ -97,7 +105,17 @@ int main(int argc, const char** argv)
 			sm_error("Unknown message '%s'.\n", class_name.c_str());
 			return -3;
 		}
+		
+		clock_t c1 = clock();
+		time_t t1;  time(&t1);
+		double deltat_s = difftime(t1,t0);
+		
+		double deltac_s = ((double)(c1-c0)) / CLOCKS_PER_SEC;
 
+		if(0) {
+			fprintf(stderr, "Answered in %.2f ms (%.2f clock)\n", 
+				deltat_s*1000, deltac_s*1000);
+		}
 		//for(int a =0; a<env.stuff.size();a++) {
 		//	fprintf(stderr, " stuff[%d] id %d\n", a, env.stuff[a]->surface_id);
 		//}
