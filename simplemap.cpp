@@ -85,6 +85,8 @@ int intersect_ray_and_circle(const double center_in[2], const double radius, con
 	
 	*reading = distance_d(p, eye_position);
 	*coord = atan2( p[1], p[0] );
+	if (*coord < 0)
+		*coord += 2*M_PI;
 	return 1;
 }
 
